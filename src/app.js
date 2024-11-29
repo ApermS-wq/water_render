@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const clientUrl = 'https://watergameonton.netlify.app';
+const clientUrl = 'https://water-render.onrender.com';
 
 const TELEGRAM_TOKEN = '7433571484:AAG4uEZhBLDyH3x8NYvwYi1-iuC6B3-im04';
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });

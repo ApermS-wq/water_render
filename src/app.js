@@ -21,6 +21,7 @@ dbClient.connect()
     .catch((err) => console.error('Ошибка подключения к базе данных:', err));
 
 app.use(express.json());
+app.use(express.static(__dirname + '/public'));
 
 const crypto = require('crypto'); // Для генерации уникального ключа
 

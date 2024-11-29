@@ -69,6 +69,10 @@ bot.onText(/\/start/, async (msg) => {
         }
     });
 });
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 
 // Эндпоинт для получения данных пользователя
 app.get('/get-user-data', async (req, res) => {

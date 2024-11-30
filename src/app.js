@@ -35,11 +35,11 @@ function generateUniqueKey() {
 // Функция для проверки/добавления пользователя
 async function ensureUserExists(userId, username) {
     const uniqueKey = generateUniqueKey(); // Создаём уникальный ключ
-    const query = `
+    const query =
         INSERT INTO users (user_id, username, unique_key, balance, buckets)
-        VALUES ($1, $2, $3, 0, 3) 
-        ON CONFLICT (user_id) DO UPDATE SET username = $2;
-    `;
+    VALUES ($1, $2, $3, 0, 3)
+    ON CONFLICT (user_id) DO UPDATE SET username = $2;
+    ;
     await dbClient.query(query, [userId, username, uniqueKey]);
 }
 
@@ -51,21 +51,21 @@ bot.onText(/\/start/, async (msg) => {
 
     await ensureUserExists(userId, username);
 
-    // Извлечение уникального ключа из базы данных
-    const result = await dbClient.query('SELECT unique_key FROM users WHERE user_id = $1', [userId]);
-    const uniqueKey = result.rows[0]?.unique_key;
+    // Извлечение данных пользователя
+    const result = await dbClient.query('SELECT balance, buckets, username FROM users WHERE user_id = $1', [userId]);
+    const { balance, buckets } = result.rows[0];
 
     // Используем DEPLOYED_URL из переменной окружения
-    const link = `${process.env.DEPLOYED_URL}/?user_id=${userId}`;
+    const link = ${process.env.DEPLOYED_URL}/?user_id=${userId};
 
     bot.sendPhoto(chatId, 'https://ideogram.ai/assets/progressive-image/balanced/response/jd7xFqMLSaSerpA8uQl1Dw', {
-        caption: `Время бежит как вода, так что не теряй ни время, ни воду!\nДобро пожаловать в Water Game!\n\nСсылка для запуска приложения: ${link}`,
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: 'Открыть приложение', web_app: { url: link } }]
-            ]
-        }
-    });
+        caption: Время бежит как вода, так что не теряй ни время, ни воду!\nДобро пожаловать в Water Game!,
+    reply_markup: {
+        inline_keyboard: [
+            [{ text: 'Открыть приложение', web_app: { url: link } }]
+        ]
+    }
+});
 });
 
 app.use(express.json());
@@ -78,6 +78,7 @@ app.get('/', (req, res) => {
 // Эндпоинт для получения данных пользователя
 app.get('/get-user-data', async (req, res) => {
     const userId = req.query.user_id;
+
 
     if (!userId) return res.status(400).json({ error: 'User ID is required' });
 
@@ -148,5 +149,5 @@ app.post('/save-wallet', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
+    console.log(Сервер запущен на порту ${PORT});
 });

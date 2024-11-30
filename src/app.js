@@ -61,7 +61,8 @@ bot.onText(/\/start/, async (msg) => {
     const link = `${process.env.DEPLOYED_URL}/?user_id=${userId}`;
 
     bot.sendPhoto(chatId, 'https://ideogram.ai/assets/progressive-image/balanced/response/jd7xFqMLSaSerpA8uQl1Dw', {
-        caption: `Привет, ${username}!\nВаш текущий баланс: ${balance}\nОсталось вёдер: ${buckets}`,
+        caption: `Привет, ${username}! Время бежит как вода, так что не теряй ни время, ни воду!
+Добро пожаловать в Water Game!\n\nВаш текущий баланс: ${balance}\nОсталось вёдер: ${buckets}`,
         reply_markup: {
             inline_keyboard: [
                 [{ text: 'Открыть приложение', web_app: { url: link } }]

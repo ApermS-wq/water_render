@@ -51,8 +51,8 @@ bot.onText(/\/start/, async (msg) => {
 
     await ensureUserExists(userId, username);
 
-    // Извлечение данных пользователя
-    const result = await dbClient.query('SELECT balance, buckets, username FROM users WHERE user_id = $1', [userId]);
+    // Извлечение уникального ключа из базы данных
+    const result = await dbClient.query('SELECT balance,buckets FROM users WHERE user_id = $1', [userId]);
     const { balance, buckets } = result.rows[0];
 
     // Используем DEPLOYED_URL из переменной окружения

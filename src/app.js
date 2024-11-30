@@ -6,40 +6,42 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const clientUrl = 'https://water-render.onrender.com';
 
-const TELEGRAM_TOKEN = '7433571484:AAG4uEZhBLDyH3x8NYvwYi1-iuC6B3-im04';
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
+
 const dbClient = new Client({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false, // Убедитесь, что SSL используется, если база удалённая
-    keepAlive: true,                // Поддерживать соединение активным
-    idleTimeoutMillis: 30000,       // Завершение через 30 секунд простоя
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    keepAlive: true,
+    idleTimeoutMillis: 30000,
 });
+
 dbClient.connect()
     .then(() => console.log('Подключение к базе данных установлено'))
     .catch((err) => console.error('Ошибка подключения к базе данных:', err));
 
+app.use(express.json());
+app.use(express.static(path.join( 'public')));
 
-const crypto = require('crypto'); // Для генерации уникального ключа
+app.get('/', (req, res) => {
+    res.sendFile(path.join('public', 'index.html'));
+});
 
+// Генерация уникального ключа
 function generateUniqueKey() {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let key = '';
-    for (let i = 0; i < 6; i++) {
-        key += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return key;
+    return Array.from({ length: 6 }, () => characters.charAt(Math.floor(Math.random() * characters.length))).join('');
 }
 
 // Функция для проверки/добавления пользователя
 async function ensureUserExists(userId, username) {
-    const uniqueKey = generateUniqueKey(); // Создаём уникальный ключ
-    const query =
+    const uniqueKey = generateUniqueKey();
+    const query = `
         INSERT INTO users (user_id, username, unique_key, balance, buckets)
-    VALUES ($1, $2, $3, 0, 3)
-    ON CONFLICT (user_id) DO UPDATE SET username = $2;
-    ;
+        VALUES ($1, $2, $3, 0, 3)
+        ON CONFLICT (user_id) DO UPDATE SET username = $2;
+    `;
     await dbClient.query(query, [userId, username, uniqueKey]);
 }
 
@@ -51,34 +53,26 @@ bot.onText(/\/start/, async (msg) => {
 
     await ensureUserExists(userId, username);
 
-    // Извлечение уникального ключа из базы данных
-    const result = await dbClient.query('SELECT balance,buckets FROM users WHERE user_id = $1', [userId]);
+    // Извлечение данных пользователя
+    const result = await dbClient.query('SELECT balance, buckets, username FROM users WHERE user_id = $1', [userId]);
     const { balance, buckets } = result.rows[0];
 
-    // Используем DEPLOYED_URL из переменной окружения
-    const link = ${process.env.DEPLOYED_URL}/?user_id=${userId};
+    // Ссылка на приложение
+    const link = `${process.env.DEPLOYED_URL}/?user_id=${userId}`;
 
     bot.sendPhoto(chatId, 'https://ideogram.ai/assets/progressive-image/balanced/response/jd7xFqMLSaSerpA8uQl1Dw', {
-        caption: Время бежит как вода, так что не теряй ни время, ни воду!\nДобро пожаловать в Water Game!,
-    reply_markup: {
-        inline_keyboard: [
-            [{ text: 'Открыть приложение', web_app: { url: link } }]
-        ]
-    }
-});
-});
-
-app.use(express.json());
-app.use(express.static(path.join( 'public')));
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join('public', 'index.html'));
+        caption: `Привет, ${username}!\nВаш текущий баланс: ${balance}\nОсталось вёдер: ${buckets}\n\nЗапустите приложение по ссылке: ${link}`,
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: 'Открыть приложение', web_app: { url: link } }]
+            ]
+        }
+    });
 });
 
 // Эндпоинт для получения данных пользователя
 app.get('/get-user-data', async (req, res) => {
     const userId = req.query.user_id;
-
 
     if (!userId) return res.status(400).json({ error: 'User ID is required' });
 
@@ -149,5 +143,5 @@ app.post('/save-wallet', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(Сервер запущен на порту ${PORT});
+    console.log(`Сервер запущен на порту ${PORT}`);
 });

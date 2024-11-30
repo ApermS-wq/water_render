@@ -21,11 +21,10 @@ dbClient.connect()
 
 // Настройка middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join( 'public')));
 
-// Маршруты
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join('public', 'index.html'));
 });
 
 // Пример API для получения данных пользователя
